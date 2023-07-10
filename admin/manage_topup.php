@@ -1,0 +1,327 @@
+<?php
+require('../php/koneksi.php');
+session_start();
+
+if (!isset($_SESSION["login_admin"])) {
+    header("Location: login.php");
+}
+
+$data_topup = hasil_query("SELECT topup.id, user.username,  topup.status, topup.total, user.id as id_user FROM topup
+LEFT JOIN user
+ON topup.id_user = user.id");
+
+$status_topup = isset($data_topup[0]) ? true : false;
+
+if (isset($_POST['confirm_topup'])) {
+    $id_topup = $_POST['id_topup'];
+    $id_user = $_POST['id_user'];
+    $jum_saldo = $_POST['jum_topup'];
+
+    $cek = hasil_query("SELECT * FROM topup WHERE id = $id_topup");
+    if ($cek[0]['status'] == 'success') {
+        echo "<script>
+        alert('The topup has a success status, cant be confirmed!');
+        </script>";
+    } else {
+        $query = "UPDATE topup SET status = 'success' WHERE id = $id_topup";
+        mysqli_query($koneksi, $query);
+        $query2 = "UPDATE data_user SET saldo = saldo + $jum_saldo WHERE id = $id_user";
+        mysqli_query($koneksi, $query2);
+
+        if (mysqli_errno($koneksi) === 0) {
+            echo "<script>
+                alert('Top up has been successfully confirmed, the user has received the balance!');
+                window.location.href = 'manage_topup.php'
+            </script>";
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>MovTix | Manage Top Up</title>
+    <!-- plugins:css -->
+    <link rel="stylesheet" href="../assets/vendors/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="../assets/vendors/css/vendor.bundle.base.css">
+    <!-- endinject -->
+    <!-- Plugin css for this page -->
+    <link rel="stylesheet" href="../assets/vendors/jvectormap/jquery-jvectormap.css">
+    <link rel="stylesheet" href="../assets/vendors/flag-icon-css/css/flag-icon.min.css">
+    <link rel="stylesheet" href="../assets/vendors/owl-carousel-2/owl.carousel.min.css">
+    <link rel="stylesheet" href="../assets/vendors/owl-carousel-2/owl.theme.default.min.css">
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <!-- endinject -->
+    <!-- Layout styles -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="../assets/img/icon.png" />
+</head>
+
+<body>
+    <div class="container-scroller">
+        <!-- partial:partials/_sidebar.html -->
+        <nav class="sidebar sidebar-offcanvas" id="sidebar">
+            <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
+                <a class="sidebar-brand brand-logo" href="index.php"><img src="../assets/img/logo.png" alt="logo" /></a>
+                <a class="sidebar-brand brand-logo-mini" href="index.php"><img src="../assets/img/icon.png" alt="logo" /></a>
+            </div>
+            <ul class="nav">
+                <li class="nav-item profile">
+                    <div class="profile-desc">
+                        <div class="profile-pic">
+                            <div class="count-indicator">
+                                <img class="img-xs rounded-circle " src="../assets/img/boy.png" alt="">
+                                <span class="count bg-success"></span>
+                            </div>
+                            <div class="profile-name">
+                                <h5 class="mb-0 font-weight-normal">Admin</h5>
+                                <span>administrator</span>
+                            </div>
+                        </div>
+                        <a href="#" id="profile-dropdown" data-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></a>
+                        <div class="dropdown-menu dropdown-menu-right sidebar-dropdown preview-list" aria-labelledby="profile-dropdown">
+                            <div class="dropdown-divider"></div>
+                            <a href="logout.php" class="dropdown-item preview-item">
+                                <div class="preview-thumbnail">
+                                    <div class="preview-icon bg-dark rounded-circle">
+                                        <i class="mdi mdi-logout text-danger"></i>
+                                    </div>
+                                </div>
+                                <div class="preview-item-content">
+                                    <p class="preview-subject ellipsis mb-1 text-small">Log Out</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item nav-category">
+                    <span class="nav-link">Navigation</span>
+                </li>
+                <li class="nav-item menu-items">
+                    <a class="nav-link" href="index.php">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-speedometer"></i>
+                        </span>
+                        <span class="menu-title">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item menu-items">
+                    <a class="nav-link" href="manage_user.php">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-account-settings"></i>
+                        </span>
+                        <span class="menu-title">Manage User</span>
+                    </a>
+                </li>
+                <li class="nav-item menu-items">
+                    <a class="nav-link" href="manage_order.php">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-cart" style="color: #FF9B9B;"></i>
+                        </span>
+                        <span class="menu-title">Manage Order</span>
+                    </a>
+                </li>
+                <li class="nav-item menu-items">
+                    <a class="nav-link" href="manage_topup.php">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-cash-usd"></i>
+                        </span>
+                        <span class="menu-title">Manage Top Up</span>
+                    </a>
+                </li>
+                <li class="nav-item menu-items">
+                    <a class="nav-link" href="manage_withdraw.php">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-bank"></i>
+                        </span>
+                        <span class="menu-title">Manage Withdraw</span>
+                    </a>
+                </li>
+                <li class="nav-item menu-items">
+                    <a class="nav-link" href="logout.php">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-logout text-danger"></i>
+                        </span>
+                        <span class="menu-title">Log Out</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- partial -->
+        <div class="container-fluid page-body-wrapper">
+            <!-- partial:partials/_navbar.html -->
+            <nav class="navbar p-0 fixed-top d-flex flex-row">
+                <div class="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center">
+                    <a class="navbar-brand brand-logo-mini" href="index.html"><img src="../assets/img/icon.png" /></a>
+                </div>
+                <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
+                    <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+                        <span class="mdi mdi-menu"></span>
+                    </button>
+                    <ul class="navbar-nav navbar-nav-right">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link" id="profileDropdown" href="#" data-toggle="dropdown">
+                                <div class="navbar-profile">
+                                    <img class="img-xs rounded-circle" src="../assets/img/boy.png" alt="">
+                                    <p class="mb-0 d-none d-sm-block navbar-profile-name">Admin</p>
+                                    <i class="mdi mdi-menu-down d-none d-sm-block"></i>
+                                </div>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="profileDropdown">
+                                <h6 class="p-3 mb-0">Profile</h6>
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-divider"></div>
+                                <a href="logout.php" class="dropdown-item preview-item">
+                                    <div class="preview-thumbnail">
+                                        <div class="preview-icon bg-dark rounded-circle">
+                                            <i class="mdi mdi-logout text-danger"></i>
+                                        </div>
+                                    </div>
+                                    <div class="preview-item-content">
+                                        <p class="preview-subject mb-1">Log out</p>
+                                    </div>
+                                </a>
+                                <div class="dropdown-divider"></div>
+                            </div>
+                        </li>
+                    </ul>
+                    <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+                        <span class="mdi mdi-format-line-spacing"></span>
+                    </button>
+                </div>
+            </nav>
+            <!-- partial -->
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    <div class="row ">
+                        <div class="col-lg-12 grid-margin stretch-card">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <?php if ($status_topup) { ?>
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr class="text-center">
+                                                        <th> Top Up ID </th>
+                                                        <th> Username </th>
+                                                        <th> Total </th>
+                                                        <th> Status </th>
+                                                        <th> Action </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($data_topup as $topup) { ?>
+                                                        <tr class="text-center">
+                                                            <td> <?php echo '#' . $topup['id'] ?> </td>
+                                                            <td> <?php echo $topup['username'] ?> </td>
+                                                            <td>
+                                                                <?php echo $topup['total'] ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php if ($topup['status'] == 'success') { ?>
+                                                                    <span class="badge bg-success text-white"><?php echo $topup['status'] ?></span>
+                                                                <?php } else { ?>
+                                                                    <span class="badge bg-warning text-white"><?php echo $topup['status'] ?></span>
+                                                                <?php } ?>
+                                                            </td>
+                                                            <td>
+                                                                <button class="btn btn-success mx-2 <?php if ($topup['status'] == 'success') echo "d-none" ?>" data-bs-toggle="modal" data-bs-target="#modalTopup<?php echo $topup['id'] ?>"><i class="mdi mdi-check-circle-outline"></i> Confirm Top Up</button>
+                                                            </td>
+
+
+                                                            <div class="modal fade" id="modalTopup<?php echo $topup['id'] ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                                <div class="modal-dialog modal-dialog-centered">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                            <h3 class="modal-title fs-5" id="exampleModalLabel">Confirm Top Up</h3>
+                                                                        </div>
+                                                                        <form action="" method="POST">
+                                                                            <div class="modal-body d-flex justify-content-center flex-column">
+                                                                                <img src="../assets/img/checked.png" alt="" class="img-fluid mx-auto" width="120">
+                                                                                <p class="text-center my-3">If you confirm, <?php echo $topup['username'] ?> will receive the balance Rp.<?php echo $topup['total'] ?></p>
+                                                                                <input type="hidden" class="form-control" value="<?php echo $topup['id'] ?>" name="id_topup">
+                                                                                <input type="hidden" class="form-control" value="<?php echo $topup['id_user'] ?>" name="id_user">
+                                                                                <input type="hidden" class="form-control" value="<?php echo $topup['total'] ?>" name="jum_topup">
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                                                <button type="submit" name="confirm_topup" class="btn btn-success"><i class="mdi mdi-check-circle"></i> Confirm Top Up</button>
+                                                                            </div>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                        </tr>
+                                                    <?php } ?>
+                                                </tbody>
+                                            </table>
+                                        <?php } else { ?>
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr class="text-center">
+                                                        <th> Top Up ID </th>
+                                                        <th> Username </th>
+                                                        <th> Total </th>
+                                                        <th> Status </th>
+                                                        <th> Action </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <td colspan="7" class="text-center text-white">
+                                                        <h3>No top up transaction</h3>
+                                                    </td>
+                                                </tbody>
+                                            </table>
+                                        <?php } ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- content-wrapper ends -->
+                <!-- partial:partials/_footer.html -->
+                <footer class="footer">
+                    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+                        <span class="text-muted d-block text-center text-sm-left d-sm-inline-block">Copyright © bootstrapdash.com 2020</span>
+                        <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center"> Modified By Iqbal Rahmatullah</span>
+                    </div>
+                </footer>
+                <!-- partial -->
+            </div>
+            <!-- main-panel ends -->
+        </div>
+        <!-- page-body-wrapper ends -->
+    </div>
+    <!-- container-scroller -->
+    <!-- plugins:js -->
+    <script src="../assets/vendors/js/vendor.bundle.base.js"></script>
+    <!-- endinject -->
+    <!-- Plugin js for this page -->
+    <script src="../style/bootstrap-5.2.3-dist/js/bootstrap.min.js"></script>
+    <script src="../assets/vendors/chart.js/Chart.min.js"></script>
+    <script src="../assets/vendors/progressbar.js/progressbar.min.js"></script>
+    <script src="../assets/vendors/jvectormap/jquery-jvectormap.min.js"></script>
+    <script src="../assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js"></script>
+    <script src="../assets/vendors/owl-carousel-2/owl.carousel.min.js"></script>
+    <!-- End plugin js for this page -->
+    <!-- inject:js -->
+    <script src="../assets/js/off-canvas.js"></script>
+    <script src="../assets/js/hoverable-collapse.js"></script>
+    <script src="../assets/js/misc.js"></script>
+    <script src="../assets/js/settings.js"></script>
+    <script src="../assets/js/todolist.js"></script>
+    <!-- endinject -->
+    <!-- Custom js for this page -->
+    <script src="../assets/js/dashboard.js"></script>
+    <!-- End custom js for this page -->
+</body>
+
+</html>
