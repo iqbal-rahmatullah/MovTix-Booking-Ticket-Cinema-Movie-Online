@@ -5,7 +5,7 @@ MovTix | Application Booking Ticket Cinema Movie Online
 
 ## About This Project
 
-![App Screenshot](https://i.ibb.co/x74GgCc/Jepretan-Layar-2023-07-10-pukul-19-47-33.png)
+![App Screenshot](https://i.ibb.co/0GwZ9DW/Jepretan-Layar-2023-07-10-pukul-19-47-33.png)
 
 The MovTix website is an online website that is used to book cinema tickets that was built using the PHP and MySQl (CRUD) programming languages. I use this programming language because I have previous experience making projects with methods like this.
 
